@@ -12,6 +12,35 @@ protocol: genetlink
 
 uapi-header: linux/dev_energymodel.h
 
+definitions:
+  -
+    type: flags
+    name: perf-state-flags
+    entries:
+      -
+        name: perf-state-inefficient
+        doc: >-
+          The performance state is inefficient. There is in this perf-domain,
+          another performance state with a higher frequency but a lower or
+          equal power cost.
+  -
+    type: flags
+    name: perf-domain-flags
+    entries:
+      -
+        name: perf-domain-microwatts
+        doc: >-
+          The power values are in micro-Watts or some other scale.
+      -
+        name: perf-domain-skip-inefficiencies
+        doc: >-
+          Skip inefficient states when estimating energy consumption.
+      -
+        name: perf-domain-artificial
+        doc: >-
+          The power values are artificial and might be created by platform
+          missing real power information.
+
 attribute-sets:
   -
     name: perf-domains
@@ -39,6 +68,9 @@ attribute-sets:
       -
         name: flags
         type: u64
+        doc: >-
+          Bitmask of performance domain flags.
+        enum: perf-domain-flags
       -
         name: cpus
         type: string
@@ -92,6 +124,9 @@ attribute-sets:
       -
         name: flags
         type: u64
+        doc: >-
+          Bitmask of performance state flags.
+        enum: perf-state-flags
 
 operations:
   list:
