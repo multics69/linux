@@ -15,6 +15,8 @@ uapi-header: linux/dev_energy_model.h
 attribute-sets:
   -
     name: perf-domains
+    doc: >-
+      Information on all the performance domains.
     attributes:
       -
         name: perf-domain
@@ -23,6 +25,8 @@ attribute-sets:
         multi-attr: true
   -
     name: perf-domain
+    doc: >-
+      Information on a single performance domains.
     attributes:
       -
         name: pad
@@ -30,18 +34,26 @@ attribute-sets:
       -
         name: perf-domain-id
         type: u32
+        doc: >-
+          A unique ID number for each performance domain.
       -
         name: flags
         type: u64
       -
         name: cpus
         type: string
+        doc: >-
+          CPUs that belong to this performance domain.
   -
     name: perf-table
+    doc: >-
+      Performance states table.
     attributes:
       -
         name: perf-domain-id
         type: u32
+        doc: >-
+          A unique ID number for each performance domain.
       -
         name: perf-state
         type: nest
@@ -49,6 +61,8 @@ attribute-sets:
         multi-attr: true
   -
     name: perf-state
+    doc: >-
+      Performance state of a performance domain.
     attributes:
       -
         name: pad
@@ -56,15 +70,25 @@ attribute-sets:
       -
         name: performance
         type: u64
+        doc: >-
+          CPU performance (capacity) at a given frequency.
       -
         name: frequency
         type: u64
+        doc: >-
+          The frequency in KHz, for consistency with CPUFreq.
       -
         name: power
         type: u64
+        doc: >-
+          The power consumed at this level (by 1 CPU or by a registered
+          device). It can be a total power: static and dynamic.
       -
         name: cost
         type: u64
+        doc: >-
+          The cost coefficient associated with this level, used during energy
+          calculation. Equal to: power * max_frequency / frequency.
       -
         name: flags
         type: u64
