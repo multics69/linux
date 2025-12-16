@@ -3,32 +3,32 @@
 # Copyright (c) 2025 Valve Corporation.
 #
 ---
-name: em
+name: dev-energy-model
 
 doc: |
   Energy model netlink interface to notify its changes.
 
 protocol: genetlink
 
-uapi-header: linux/energy_model.h
+uapi-header: linux/dev_energy_model.h
 
 attribute-sets:
   -
-    name: pds
+    name: perf-domains
     attributes:
       -
-        name: pd
+        name: perf-domain
         type: nest
-        nested-attributes: pd
+        nested-attributes: perf-domain
         multi-attr: true
   -
-    name: pd
+    name: perf-domain
     attributes:
       -
         name: pad
         type: pad
       -
-        name: pd-id
+        name: perf-domain-id
         type: u32
       -
         name: flags
@@ -37,18 +37,18 @@ attribute-sets:
         name: cpus
         type: string
   -
-    name: pd-table
+    name: perf-table
     attributes:
       -
-        name: pd-id
+        name: perf-domain-id
         type: u32
       -
-        name: ps
+        name: perf-state
         type: nest
-        nested-attributes: ps
+        nested-attributes: perf-state
         multi-attr: true
   -
-    name: ps
+    name: perf-state
     attributes:
       -
         name: pad
@@ -72,42 +72,42 @@ attribute-sets:
 operations:
   list:
     -
-      name: get-pds
-      attribute-set: pds
+      name: get-perf-domains
+      attribute-set: perf-domains
       doc: Get the list of information for all performance domains.
       do:
         reply:
           attributes:
-            - pd
+            - perf-domain
     -
-      name: get-pd-table
-      attribute-set: pd-table
+      name: get-perf-table
+      attribute-set: perf-table
       doc: Get the energy model table of a performance domain.
       do:
         request:
           attributes:
-            - pd-id
+            - perf-domain-id
         reply:
           attributes:
-            - pd-id
-            - ps
+            - perf-domain-id
+            - perf-state
     -
-      name: pd-created
+      name: perf-domain-created
       doc: A performance domain is created.
-      notify: get-pd-table
+      notify: get-perf-table
       mcgrp: event
     -
-      name: pd-updated
+      name: perf-domain-updated
       doc: A performance domain is updated.
-      notify: get-pd-table
+      notify: get-perf-table
       mcgrp: event
     -
-      name: pd-deleted
+      name: perf-domain-deleted
       doc: A performance domain is deleted.
-      attribute-set: pd-table
+      attribute-set: perf-table
       event:
         attributes:
-          - pd-id
+          - perf-domain-id
       mcgrp: event
 
 mcast-groups:
