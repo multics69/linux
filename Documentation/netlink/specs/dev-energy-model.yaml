@@ -78,7 +78,8 @@ attribute-sets:
         enum: perf-domain-flags
       -
         name: cpus
-        type: string
+        type: u32
+        multi-attr: true
         doc: >-
           CPUs that belong to this performance domain.
   -
