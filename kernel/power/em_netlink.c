@@ -12,7 +12,7 @@
 #include <linux/energy_model.h>
 #include <net/sock.h>
 #include <net/genetlink.h>
-#include <uapi/linux/energy_model.h>
+#include <uapi/linux/dev_energy_model.h>
 
 #include "em_netlink.h"
 #include "em_netlink_autogen.h"
