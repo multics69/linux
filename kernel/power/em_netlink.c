@@ -79,6 +79,45 @@ out_cancel_nest:
 int dev_energy_model_nl_get_perf_domains_doit(struct sk_buff *skb,
 					      struct genl_info *info)
 {
+	int id, ret = -EMSGSIZE, msg_sz = 0;
+	int cmd = info->genlhdr->cmd;
+	struct em_perf_domain *pd;
+	struct sk_buff *msg;
+	void *hdr;
+
+	if (!info->attrs[DEV_ENERGY_MODEL_A_PERF_DOMAINS_PERF_DOMAIN_ID])
+		return -EINVAL;
+
+	id = nla_get_u32(info->attrs[DEV_ENERGY_MODEL_A_PERF_DOMAINS_PERF_DOMAIN_ID]);
+	pd = em_perf_domain_get_by_id(id);
+
+	__em_nl_get_pd_size(pd, &msg_sz);
+	msg = genlmsg_new(msg_sz, GFP_KERNEL);
+	if (!msg)
+		return -ENOMEM;
+
+	hdr = genlmsg_put_reply(msg, info, &dev_energy_model_nl_family, 0, cmd);
+	if (!hdr)
+		goto out_free_msg;
+
+	ret = __em_nl_get_pd(pd, msg);
+	if (ret)
+		goto out_cancel_msg;
+	genlmsg_end(msg, hdr);
+
+	return genlmsg_reply(msg, info);
+
+out_cancel_msg:
+	genlmsg_cancel(msg, hdr);
+out_free_msg:
+	nlmsg_free(msg);
+	return ret;
+}
+
+int dev_energy_model_nl_get_perf_domains_dumpit(struct sk_buff *skb,
+						struct netlink_callback *cb)
+{
+#if 0
 	struct sk_buff *msg;
 	void *hdr;
 	int cmd = info->genlhdr->cmd;
@@ -108,11 +147,7 @@ out_free_msg:
 	nlmsg_free(msg);
 
 	return ret;
-}
-
-int dev_energy_model_nl_get_perf_domains_dumpit(struct sk_buff *skb,
-						struct netlink_callback *cb)
-{
+#endif
 	return -ENOTSUPP;
 }
 
