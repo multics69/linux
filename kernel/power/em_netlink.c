@@ -18,6 +18,14 @@
 #include "em_netlink_autogen.h"
 
 /*************************** Command encoding ********************************/
+struct dump_ctx {
+	int idx;
+	int start;
+	void *data;
+	struct sk_buff *skb;
+	struct netlink_callback *cb;
+};
+
 static int __em_nl_get_pd_size(struct em_perf_domain *pd, void *data)
 {
 	int nr_cpus, msg_sz, cpus_sz;
@@ -37,6 +45,15 @@ static int __em_nl_get_pd_size(struct em_perf_domain *pd, void *data)
 
 	*tot_msg_sz += nlmsg_total_size(genlmsg_msg_size(msg_sz));
 	return 0;
+}
+
+static int __em_nl_get_pd_size_for_dump(struct em_perf_domain *pd, void *data)
+{
+	struct dump_ctx *ctx = data;
+
+	if (ctx->idx++ < ctx->start)
+		return 0;
+	return __em_nl_get_pd_size(pd, ctx->data);
 }
 
 static int __em_nl_get_pd(struct em_perf_domain *pd, void *data)
@@ -74,6 +91,31 @@ out_cancel_nest:
 	nla_nest_cancel(msg, entry);
 
 	return -EMSGSIZE;
+}
+
+static int __em_nl_get_pd_for_dump(struct em_perf_domain *pd, void *data)
+{
+	struct dump_ctx *ctx = data;
+	void *hdr;
+	int ret;
+
+	if (ctx->idx++ < ctx->start)
+		return 0;
+
+	hdr = genlmsg_put(ctx->skb, NETLINK_CB(ctx->cb->skb).portid,
+			  ctx->cb->nlh->nlmsg_seq,
+			  &dev_energy_model_nl_family, NLM_F_MULTI,
+			  DEV_ENERGY_MODEL_CMD_GET_PERF_DOMAINS);
+	if (!hdr) {
+		struct sk_buff *msg = ctx->data;
+
+		genlmsg_cancel(msg, hdr);
+		return -EMSGSIZE;
+	}
+
+	ret = __em_nl_get_pd(pd, ctx->data);
+	genlmsg_end(ctx->skb, hdr);
+	return ret;
 }
 
 int dev_energy_model_nl_get_perf_domains_doit(struct sk_buff *skb,
@@ -117,38 +159,31 @@ out_free_msg:
 int dev_energy_model_nl_get_perf_domains_dumpit(struct sk_buff *skb,
 						struct netlink_callback *cb)
 {
-#if 0
-	struct sk_buff *msg;
-	void *hdr;
-	int cmd = info->genlhdr->cmd;
 	int ret = -EMSGSIZE, msg_sz = 0;
+	struct sk_buff *msg;
+	struct dump_ctx ctx = {
+		.start = cb->args[0],
+		.skb = skb,
+		.cb = cb,
+	};
 
-	for_each_em_perf_domain(__em_nl_get_pd_size, &msg_sz);
+	ctx.idx = 0;
+	ctx.data = &msg_sz;
+	for_each_em_perf_domain(__em_nl_get_pd_size_for_dump, &ctx);
 
 	msg = genlmsg_new(msg_sz, GFP_KERNEL);
 	if (!msg)
 		return -ENOMEM;
 
-	hdr = genlmsg_put_reply(msg, info, &dev_energy_model_nl_family, 0, cmd);
-	if (!hdr)
-		goto out_free_msg;
+	ctx.idx = 0;
+	ctx.data = msg;
+	ret = for_each_em_perf_domain(__em_nl_get_pd_for_dump, &ctx);
+	if (ret) {
+		nlmsg_free(msg);
+		return ret;
+	}
 
-	ret = for_each_em_perf_domain(__em_nl_get_pd, msg);
-	if (ret)
-		goto out_cancel_msg;
-
-	genlmsg_end(msg, hdr);
-
-	return genlmsg_reply(msg, info);
-
-out_cancel_msg:
-	genlmsg_cancel(msg, hdr);
-out_free_msg:
-	nlmsg_free(msg);
-
-	return ret;
-#endif
-	return -ENOTSUPP;
+	return 0;
 }
 
 static struct em_perf_domain *__em_nl_get_pd_table_id(struct nlattr **attrs)
