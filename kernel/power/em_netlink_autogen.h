@@ -14,6 +14,8 @@
 
 int dev_energy_model_nl_get_perf_domains_doit(struct sk_buff *skb,
 					      struct genl_info *info);
+int dev_energy_model_nl_get_perf_domains_dumpit(struct sk_buff *skb,
+						struct netlink_callback *cb);
 int dev_energy_model_nl_get_perf_table_doit(struct sk_buff *skb,
 					    struct genl_info *info);
 

@@ -11,6 +11,11 @@
 
 #include <uapi/linux/dev_energy_model.h>
 
+/* DEV_ENERGY_MODEL_CMD_GET_PERF_DOMAINS - do */
+static const struct nla_policy dev_energy_model_get_perf_domains_nl_policy[DEV_ENERGY_MODEL_A_PERF_DOMAINS_PERF_DOMAIN_ID + 1] = {
+	[DEV_ENERGY_MODEL_A_PERF_DOMAINS_PERF_DOMAIN_ID] = { .type = NLA_U32, },
+};
+
 /* DEV_ENERGY_MODEL_CMD_GET_PERF_TABLE - do */
 static const struct nla_policy dev_energy_model_get_perf_table_nl_policy[DEV_ENERGY_MODEL_A_PERF_TABLE_PERF_DOMAIN_ID + 1] = {
 	[DEV_ENERGY_MODEL_A_PERF_TABLE_PERF_DOMAIN_ID] = { .type = NLA_U32, },
@@ -19,9 +24,16 @@ static const struct nla_policy dev_energy_model_get_perf_table_nl_policy[DEV_ENE
 /* Ops table for dev_energy_model */
 static const struct genl_split_ops dev_energy_model_nl_ops[] = {
 	{
+		.cmd		= DEV_ENERGY_MODEL_CMD_GET_PERF_DOMAINS,
+		.doit		= dev_energy_model_nl_get_perf_domains_doit,
+		.policy		= dev_energy_model_get_perf_domains_nl_policy,
+		.maxattr	= DEV_ENERGY_MODEL_A_PERF_DOMAINS_PERF_DOMAIN_ID,
+		.flags		= GENL_CMD_CAP_DO,
+	},
+	{
 		.cmd	= DEV_ENERGY_MODEL_CMD_GET_PERF_DOMAINS,
-		.doit	= dev_energy_model_nl_get_perf_domains_doit,
-		.flags	= GENL_CMD_CAP_DO,
+		.dumpit	= dev_energy_model_nl_get_perf_domains_dumpit,
+		.flags	= GENL_CMD_CAP_DUMP,
 	},
 	{
 		.cmd		= DEV_ENERGY_MODEL_CMD_GET_PERF_TABLE,
