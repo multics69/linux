@@ -110,6 +110,12 @@ out_free_msg:
 	return ret;
 }
 
+int dev_energy_model_nl_get_perf_domains_dumpit(struct sk_buff *skb,
+						struct netlink_callback *cb)
+{
+	return -ENOTSUPP;
+}
+
 static struct em_perf_domain *__em_nl_get_pd_table_id(struct nlattr **attrs)
 {
 	struct em_perf_domain *pd;
