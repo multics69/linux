@@ -24,3 +24,6 @@ obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
 obj-$(CONFIG_ENERGY_MODEL)	+= em.o
 em-y				:= energy_model.o
 em-$(CONFIG_NET)		+= em_netlink_autogen.o em_netlink.o
+
+obj-m	+= test_em.o
+
